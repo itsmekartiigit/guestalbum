@@ -3,10 +3,11 @@ import {
   ArrowLeft,
   Camera,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Grid2X2,
   Download,
+  FolderOpen,
   Heart,
   Image as ImageIcon,
   Images,
@@ -14,7 +15,7 @@ import {
   LoaderCircle,
   LockKeyhole,
   Radio,
-  Search,
+  Home,
   Trash2,
   Video,
   X,
@@ -46,6 +47,8 @@ function App() {
   const [folders, setFolders] = useState<GuestAlbumResponse['folders']>([])
   const [media, setMedia] = useState<GuestAlbumMedia[]>([])
   const [activeFolder, setActiveFolder] = useState('all')
+  const [screen, setScreen] = useState<'home' | 'gallery'>('home')
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<'all' | 'photo' | 'video'>('all')
   const [selected, setSelected] = useState<string[]>([])
   const [sessionId, setSessionId] = useState('')
   const [loading, setLoading] = useState(true)
@@ -55,9 +58,6 @@ function App() {
   const [activeTab, setActiveTab] = useState<'gallery' | 'selection'>('gallery')
   const [confirmed, setConfirmed] = useState(false)
   const [downloadEnabled, setDownloadEnabled] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [search, setSearch] = useState('')
-  const [compactLayout, setCompactLayout] = useState(false)
   const touchStartX = useRef<number | null>(null)
   const pressTimer = useRef<number | null>(null)
   const pressStart = useRef<{ x: number; y: number } | null>(null)
@@ -72,13 +72,12 @@ function App() {
   const visibleMedia = useMemo(() => {
     const source = activeTab === 'selection'
       ? media.filter((item) => selected.includes(item.mediaId) && item.mediaType === 'photo')
-      : media.filter((item) => item.mediaType === 'photo' || item.mediaType === 'video')
-    const query = search.trim().toLocaleLowerCase()
+      : media.filter((item) => mediaTypeFilter === 'all' || item.mediaType === mediaTypeFilter)
     return source.filter((item) => {
       const inFolder = activeTab === 'selection' || activeFolder === 'all' || item.folderId === activeFolder
-      return inFolder && (!query || item.filename.toLocaleLowerCase().includes(query))
+      return inFolder
     })
-  }, [media, activeFolder, activeTab, selected, search])
+  }, [media, activeFolder, activeTab, selected, mediaTypeFilter])
 
   const currentPhoto = viewerIndex === null ? null : visibleMedia[viewerIndex]
 
@@ -252,11 +251,25 @@ function App() {
   function openTab(tab: 'gallery' | 'selection') {
     cancelLongPress()
     setActiveTab(tab)
-    setActiveFolder('all')
-    setSearchOpen(false)
-    setSearch('')
+    if (tab === 'selection') setScreen('gallery')
     setViewerIndex(null)
     setError('')
+  }
+
+  function openFolder(folderId: string) {
+    setActiveFolder(folderId)
+    setActiveTab('gallery')
+    setMediaTypeFilter('photo')
+    setScreen('gallery')
+    setViewerIndex(null)
+  }
+
+  function openHome() {
+    setScreen('home')
+    setActiveTab('gallery')
+    setActiveFolder('all')
+    setMediaTypeFilter('all')
+    setViewerIndex(null)
   }
 
   async function clearSelection() {
@@ -396,69 +409,78 @@ function App() {
   if (!album) return null
 
   const remaining = selectionLimit > 0 ? Math.max(0, selectionLimit - selectedPhotos.length) : null
-  const filterFolders = folders
+  const activeFolderInfo = folders.find((folder) => folder.folderId === activeFolder)
+  const folderPhotoCount = (folderId: string) => media.filter((item) => item.folderId === folderId && item.mediaType === 'photo').length
+  const folderVideoCount = (folderId: string) => media.filter((item) => item.folderId === folderId && item.mediaType === 'video').length
+  const folderCover = (folderId: string) => media.find((item) => item.folderId === folderId && item.mediaType === 'photo' && (item.thumbnailUrl || item.previewUrl))
+  const heroImage = activeFolderInfo ? folderCover(activeFolderInfo.folderId)?.thumbnailUrl || folderCover(activeFolderInfo.folderId)?.previewUrl : album.coverImageUrl
+  const homePhotoCount = media.filter((item) => item.mediaType === 'photo').length
+  const homeVideoCount = media.filter((item) => item.mediaType === 'video').length
 
   return (
-    <main className="app gallery-app">
+    <main className={`app gallery-app ${screen === 'home' && activeTab === 'gallery' ? 'home-screen' : ''}`}>
       <header className="topbar">
-        <button className="header-icon back-control" type="button" onClick={goBack} aria-label="Go back"><ArrowLeft /></button>
-        <div className="brand-block">
-          <div className="brand"><Radio aria-hidden="true" /> ON AIR</div>
-          <span>Wedding Album Selection</span>
+        <button className="brand-block" type="button" onClick={screen === 'gallery' ? openHome : goBack} aria-label={screen === 'gallery' ? 'Back to folders' : 'ON AIR Wedding Live'}>
+          {screen === 'gallery' && <ArrowLeft className="brand-back" aria-hidden="true" />}
+          <span className="brand-copy"><span className="brand"><Radio aria-hidden="true" /> ON AIR</span><span className="brand-subtitle">WEDDING LIVE</span></span>
+        </button>
+        <div className="studio-brand" aria-label={branding?.studioName || 'Studio'}>
+          <span className="studio-mark">{branding?.studioLogo ? <img src={branding.studioLogo} alt="" /> : <Camera aria-hidden="true" />}</span>
+          <span className="studio-name">{branding?.studioName || 'Wedding Studio'}</span>
+          <ChevronDown className="studio-chevron" aria-hidden="true" />
         </div>
         <div className="header-tools">
           {activeTab === 'gallery' && <>
             {downloadEnabled && <button className="header-icon download-all-control" type="button" onClick={() => void downloadAllPhotos()} disabled={Boolean(busyMedia)} aria-label="Download all photos" title="Download all photos">
               {busyMedia === '__download_all__' ? <LoaderCircle className="spinner" /> : <Download />}
             </button>}
-            <button className={`header-icon ${searchOpen ? 'tool-active' : ''}`} type="button" onClick={() => { setSearchOpen((open) => !open); setSearch('') }} aria-label="Search photos"><Search /></button>
-            <button className={`header-icon ${compactLayout ? 'tool-active' : ''}`} type="button" onClick={() => setCompactLayout((compact) => !compact)} aria-label="Toggle gallery spacing"><Grid2X2 /></button>
           </>}
         </div>
       </header>
 
-      {searchOpen && activeTab === 'gallery' && (
-        <label className="search-bar">
-          <Search size={18} aria-hidden="true" />
-          <input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search photos by filename" />
-          {search && <button type="button" onClick={() => setSearch('')} aria-label="Clear search"><X size={17} /></button>}
-        </label>
-      )}
-
-      <nav className="top-tabs" aria-label="Album navigation">
-        <button type="button" className={activeTab === 'gallery' ? 'active' : ''} onClick={() => openTab('gallery')}>
-          <Images size={20} /><span>Gallery</span>
-        </button>
-        <button type="button" className={activeTab === 'selection' ? 'active' : ''} onClick={() => openTab('selection')}>
-          <Layers size={20} /><span>View Selection ({selectedPhotos.length})</span>
-        </button>
-      </nav>
-
-      {activeTab === 'gallery' ? (
-        <>
-          <section className="gallery-heading">
-            <span className="eyebrow">YOUR WEDDING COLLECTION</span>
-            <h1>Explore <em>Gallery</em></h1>
-            <p>{album.albumName} · Press and hold the photo to select</p>
-          </section>
-
-          <div className="folder-scroll" aria-label="Filter photos by folder">
-            <button className={`folder-chip ${activeFolder === 'all' ? 'active' : ''}`} onClick={() => setActiveFolder('all')} type="button">
-              <Images size={18} /> All Photos
-            </button>
-            {filterFolders.map((folder) => (
-              <button key={folder.folderId} className={`folder-chip ${activeFolder === folder.folderId ? 'active' : ''}`} onClick={() => setActiveFolder(folder.folderId)} type="button">
-                <Heart size={17} /> {folder.folderName}
-              </button>
-            ))}
-            <button className="folder-chip" type="button" onClick={() => openTab('selection')}>
-              <Check size={18} /> Selected ({selectedPhotos.length})
-            </button>
+      {activeTab === 'gallery' ? <>
+        <section className={`wedding-hero ${activeFolderInfo ? 'folder-hero' : ''}`}>
+          {heroImage && <img src={heroImage} alt="" className="hero-image" fetchPriority="high" />}
+          <div className="hero-shade" />
+          <div className="hero-copy">
+            {activeFolderInfo && <span className="hero-kicker"><FolderOpen size={17} /> EVENT FOLDER</span>}
+            <h1>{activeFolderInfo?.folderName || album.albumName}</h1>
+            <span className="hero-divider"><i />♡<i /></span>
+            <p>{activeFolderInfo ? `${folderPhotoCount(activeFolder)} Photos` : 'Wedding Album'}</p>
           </div>
+        </section>
 
+        {screen === 'home' ? <>
+          <nav className="quick-nav" aria-label="Album sections">
+            <button className="quick-card active" type="button" onClick={openHome}><Images /><span>Folders</span></button>
+            <button className="quick-card" type="button" onClick={() => { setMediaTypeFilter('photo'); setActiveFolder('all'); setScreen('gallery'); setActiveTab('gallery') }}><ImageIcon /><span>All Photos</span></button>
+            <button className="quick-card" type="button" onClick={() => { setMediaTypeFilter('video'); setActiveFolder('all'); setScreen('gallery'); setActiveTab('gallery') }}><Video /><span>Videos</span></button>
+            <button className="quick-card" type="button" onClick={() => openTab('selection')}><Check /><span>Selection</span></button>
+          </nav>
+          <section className="folder-section">
+            <div className="section-title"><div><FolderOpen /><h2>Event Folders</h2></div><span>{folders.length} {folders.length === 1 ? 'Folder' : 'Folders'}</span></div>
+            <div className="folder-grid">
+              {folders.map((folder) => {
+                const cover = folderCover(folder.folderId)
+                const count = folderPhotoCount(folder.folderId)
+                return <button className="folder-card" type="button" key={folder.folderId} onClick={() => openFolder(folder.folderId)}>
+                  <span className="folder-card-image">{cover ? <img src={cover.thumbnailUrl || cover.previewUrl || ''} alt="" loading="lazy" decoding="async" /> : <span className="folder-placeholder"><Images /></span>}</span>
+                  <span className="folder-card-info"><span className="folder-card-icon"><ImageIcon /></span><span className="folder-card-copy"><strong>{folder.folderName}</strong><small>{count} {count === 1 ? 'Photo' : 'Photos'}</small></span><ChevronRight className="folder-arrow" /></span>
+                </button>
+              })}
+              {folders.length === 0 && <div className="folders-empty"><FolderOpen /><span>No event folders yet</span></div>}
+            </div>
+          </section>
+        </> : <>
+          <div className="gallery-controls">
+            <div className="media-tabs" aria-label="Media type">
+              <button type="button" className={mediaTypeFilter !== 'video' ? 'active' : ''} onClick={() => setMediaTypeFilter('photo')}><ImageIcon />Photos ({activeFolder === 'all' ? homePhotoCount : folderPhotoCount(activeFolder)})</button>
+              <button type="button" className={mediaTypeFilter === 'video' ? 'active' : ''} onClick={() => setMediaTypeFilter('video')}><Video />Videos ({activeFolder === 'all' ? homeVideoCount : folderVideoCount(activeFolder)})</button>
+            </div>
+          </div>
           <SelectionSummary count={selectedPhotos.length} remaining={remaining} />
-        </>
-      ) : (
+        </>}
+      </> : (
         <>
           <section className="gallery-heading selection-heading">
             <span className="eyebrow">YOUR FAVOURITES</span>
@@ -471,7 +493,7 @@ function App() {
 
       {error && <p className="inline-error" role="alert">{error}</p>}
 
-      <section className={`photo-grid ${compactLayout && activeTab === 'gallery' ? 'compact-layout' : ''}`} aria-label={activeTab === 'selection' ? 'Selected photos' : 'Wedding album photos'}>
+      {(activeTab === 'selection' || screen === 'gallery') && <section className="photo-grid" aria-label={activeTab === 'selection' ? 'Selected photos' : 'Wedding album photos'}>
         {visibleMedia.map((photo, index) => {
           const isSelected = selected.includes(photo.mediaId)
           const imageUrl = photo.thumbnailUrl || photo.previewUrl
@@ -512,12 +534,12 @@ function App() {
         {visibleMedia.length === 0 && (
           <div className="empty-state">
             <Images size={36} />
-            <h2>{activeTab === 'selection' ? 'No selected photos yet' : search ? 'No matching photos' : 'No photos in this folder'}</h2>
-            <p>{activeTab === 'selection' ? 'Your selected photos will appear here.' : 'Try another folder or search term.'}</p>
+            <h2>{activeTab === 'selection' ? 'No selected photos yet' : mediaTypeFilter === 'video' ? 'No videos in this folder' : 'No photos in this folder'}</h2>
+            <p>{activeTab === 'selection' ? 'Your selected photos will appear here.' : 'New memories will appear here when they are added.'}</p>
             {activeTab === 'selection' && <button className="text-action" onClick={() => openTab('gallery')} type="button">Browse gallery</button>}
           </div>
         )}
-      </section>
+      </section>}
 
       {activeTab === 'selection' && (
         <section className="selection-actions" aria-label="Selection actions">
@@ -536,14 +558,12 @@ function App() {
         </section>
       )}
 
-      <footer className="gallery-footer"><Camera size={14} /> ON AIR · Wedding memories, beautifully preserved.</footer>
-
       <nav className="bottom-tabs" aria-label="Album navigation">
-        <button type="button" className={activeTab === 'gallery' ? 'active' : ''} onClick={() => openTab('gallery')}>
-          <Images size={20} /><span>Gallery</span>
+        <button type="button" className={activeTab === 'gallery' && screen === 'home' ? 'active' : ''} onClick={openHome}>
+          <Home size={20} /><span>Home</span>
         </button>
         <button type="button" className={activeTab === 'selection' ? 'active' : ''} onClick={() => openTab('selection')}>
-          <Layers size={20} /><span>View Selection ({selectedPhotos.length})</span>
+          <Check size={20} /><span>Selection{selectedPhotos.length ? ` (${selectedPhotos.length})` : ''}</span>
         </button>
       </nav>
 

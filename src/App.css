@@ -210,3 +210,123 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-off
   .viewer-image { max-height: 82vh; border-radius: 0; }
   .watermark-viewer { font-size: clamp(14px, 4vw, 25px); }
 }
+
+/* ON AIR album browsing refresh */
+.app { max-width: 1100px; padding-bottom: calc(108px + env(safe-area-inset-bottom)); }
+.topbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 44px; min-height: 82px; padding: 10px 20px; border: 0; background: radial-gradient(ellipse at 66% -50%, #4c0a12 0, transparent 58%), #080808ed; }
+.brand-block { flex-direction: row; align-items: center; justify-self: start; gap: 9px; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.brand-copy { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; }
+.brand-back { width: 25px; height: 25px; flex: 0 0 auto; }
+.brand { gap: 7px; font-size: clamp(23px, 5vw, 34px); letter-spacing: .02em; }
+.brand svg { width: 1.05em; height: 1.05em; color: #f20d24; fill: #f20d24; }
+.brand-subtitle { padding-left: 35px; color: #f0eff0; font-size: 9px; font-weight: 700; letter-spacing: .34em; }
+.studio-brand { display: flex; min-width: 0; align-items: center; justify-self: end; gap: 10px; padding: 5px 0 5px 10px; }
+.studio-mark { display: grid; width: 48px; height: 48px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid #ffffff16; border-radius: 14px; background: linear-gradient(145deg, #382b2d, #191719); color: #fff; }
+.studio-mark svg { width: 27px; height: 27px; }
+.studio-mark img { width: 100%; height: 100%; object-fit: contain; }
+.studio-name { max-width: 170px; overflow: hidden; color: #f6f4f4; font-size: 14px; font-weight: 700; line-height: 1.25; text-overflow: ellipsis; }
+.studio-chevron { flex: 0 0 auto; width: 20px; color: white; }
+.header-tools { width: 40px; }
+.header-icon.download-all-control { width: 40px; height: 40px; border-radius: 13px; background: #ffffff0d; }
+.wedding-hero { position: relative; display: flex; min-height: 210px; aspect-ratio: 2.3 / 1; align-items: center; margin: 10px 18px 28px; overflow: hidden; border: 1px solid #ffffff0d; border-radius: 28px; background: radial-gradient(ellipse at 80% 20%, #693317, transparent 40%), linear-gradient(110deg, #18110c, #2b140f 55%, #110d0c); isolation: isolate; }
+.hero-image { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-shade { position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, #090807ed 0%, #090807bb 34%, #09080730 68%, #09080708 100%), linear-gradient(0deg, #09080725, transparent 55%); }
+.hero-copy { width: min(62%, 500px); padding: 24px 6.5%; }
+.hero-copy h1 { margin: 4px 0 0; overflow: hidden; color: #fff; font-family: 'Dancing Script', 'Playfair Display', cursive; font-size: clamp(36px, 8vw, 64px); font-weight: 600; line-height: 1.05; text-overflow: ellipsis; }
+.hero-copy p { margin: 9px 0 0; color: #f1eeee; font-size: clamp(17px, 3vw, 25px); font-weight: 500; }
+.hero-divider { display: flex; width: min(210px, 100%); align-items: center; justify-content: center; gap: 10px; margin-top: 12px; color: white; font-size: 23px; line-height: 1; }
+.hero-divider i { width: 36%; height: 1px; background: #ffffffa8; }
+.hero-kicker { display: inline-flex; align-items: center; gap: 7px; color: #ffb24b; font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.folder-hero .hero-copy h1 { font-family: 'DM Sans', sans-serif; font-size: clamp(33px, 7vw, 54px); font-weight: 700; }
+.folder-hero .hero-divider { display: none; }
+.folder-hero .hero-copy p { margin-top: 12px; }
+.quick-nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 22px 38px; }
+.quick-card { display: flex; min-width: 0; min-height: 105px; flex-direction: column; align-items: center; justify-content: center; gap: 9px; border: 1px solid #ffffff0a; border-radius: 24px; background: linear-gradient(140deg, #222224, #181819); color: #fff; font-size: clamp(11px, 2.2vw, 16px); font-weight: 600; cursor: pointer; transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.quick-card svg { width: 29px; height: 29px; stroke-width: 1.8; }
+.quick-card.active { border-color: #fb1730; background: linear-gradient(145deg, #f20d2c, #b9071e); box-shadow: 0 8px 26px #ed102d45; }
+.quick-card:active, .folder-card:active { transform: scale(.98); }
+.folder-section { padding: 0 18px 28px; }
+.section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 4px 16px; }
+.section-title > div { display: flex; min-width: 0; align-items: center; gap: 12px; }
+.section-title > div > svg { width: 29px; height: 29px; flex: 0 0 auto; color: #f52b43; }
+.section-title h2 { margin: 0; color: #f7f5f5; font-size: clamp(20px, 4vw, 29px); font-weight: 700; }
+.section-title > span { flex: 0 0 auto; padding: 8px 15px; border-radius: 24px; background: #29292b; color: #eee; font-size: 13px; }
+.folder-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.folder-card { min-width: 0; padding: 0; overflow: hidden; border: 1px solid #ffffff08; border-radius: 22px; background: linear-gradient(145deg, #272729, #1b1b1d); color: #fff; text-align: left; cursor: pointer; transition: transform .18s ease, border-color .18s ease; }
+.folder-card:hover { border-color: #ffffff25; }
+.folder-card-image { position: relative; display: block; aspect-ratio: 4 / 3; overflow: hidden; background: linear-gradient(135deg, #342a24, #171719); }
+.folder-card-image > img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; }
+.folder-card:hover .folder-card-image > img { transform: scale(1.035); }
+.folder-placeholder { display: grid; width: 100%; height: 100%; place-items: center; color: #f33a50; }
+.folder-placeholder svg { width: 42px; height: 42px; stroke-width: 1.4; }
+.folder-card-info { display: flex; min-height: 78px; align-items: center; gap: 11px; padding: 11px 13px; }
+.folder-card-icon { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; color: #f4f4f5; }
+.folder-card-icon svg { width: 28px; height: 28px; stroke-width: 1.8; }
+.folder-card-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.folder-card-copy strong { overflow: hidden; font-size: clamp(14px, 2.6vw, 19px); text-overflow: ellipsis; white-space: nowrap; }
+.folder-card-copy small { color: #e3e1e1; font-size: 13px; }
+.folder-arrow { width: 23px; flex: 0 0 auto; }
+.folders-empty { grid-column: 1 / -1; display: flex; min-height: 150px; align-items: center; justify-content: center; gap: 10px; border: 1px dashed #414145; border-radius: 20px; color: #a9a9af; }
+.gallery-controls { margin: 0 22px 16px; }
+.media-tabs { display: flex; gap: 10px; }
+.media-tabs button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 9px; padding: 0 18px; border: 1px solid #303033; border-radius: 26px; background: #1b1b1d; color: #f5f4f4; font-size: 14px; font-weight: 650; cursor: pointer; }
+.media-tabs button svg { width: 21px; height: 21px; }
+.media-tabs button.active { border-color: #f20d2d; background: linear-gradient(120deg, #ef1832, #b60920); box-shadow: 0 5px 18px #ed26382d; }
+.gallery-heading { padding-top: 30px; }
+.selection-summary { margin-top: 0; }
+.photo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 12px; padding: 0 18px 25px; }
+.photo-card { display: block; width: 100%; margin: 0; border-radius: 19px; }
+.photo-open img { width: 100%; aspect-ratio: 1.13 / 1; object-fit: cover; }
+.photo-placeholder { aspect-ratio: 1.13 / 1; }
+.watermark-grid { font-size: clamp(9px, 2vw, 14px); }
+.bottom-tabs { width: 100%; max-width: 1100px; min-height: calc(90px + env(safe-area-inset-bottom)); grid-template-columns: 1fr 1fr; gap: 12px; padding: 8px max(24px, calc((100vw - 720px) / 2)) calc(8px + env(safe-area-inset-bottom)); border: 1px solid #343438; border-bottom: 0; border-radius: 26px 26px 0 0; background: #151516f5; }
+.bottom-tabs button { flex-direction: column; gap: 5px; border: 1px solid transparent; border-radius: 23px; font-size: 14px; }
+.bottom-tabs button svg { width: 27px; height: 27px; }
+.bottom-tabs button.active { border-color: #f20d2d; }
+.photo-grid .empty-state { grid-column: 1 / -1; }
+
+@media (min-width: 700px) {
+  .wedding-hero { min-height: 300px; margin-right: 24px; margin-left: 24px; }
+  .quick-nav { gap: 18px; margin-right: 40px; margin-left: 40px; }
+  .quick-card { min-height: 125px; }
+  .folder-section { padding-right: 30px; padding-left: 30px; }
+  .folder-grid { gap: 20px; }
+  .photo-grid { gap: 16px; padding-right: 26px; padding-left: 26px; }
+}
+@media (max-width: 420px) {
+  .topbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 38px; padding-right: 12px; padding-left: 14px; }
+  .brand { font-size: 22px; }
+  .brand-back { width: 20px; height: 20px; }
+  .brand-subtitle { padding-left: 30px; font-size: 7px; }
+  .studio-brand { gap: 6px; }
+  .studio-mark { width: 38px; height: 38px; border-radius: 12px; }
+  .studio-mark svg { width: 22px; height: 22px; }
+  .studio-name { max-width: 104px; font-size: 11px; }
+  .studio-chevron { width: 15px; }
+  .wedding-hero { min-height: 185px; margin: 8px 10px 23px; border-radius: 22px; }
+  .hero-copy { width: 70%; padding-right: 2%; padding-left: 7%; }
+  .hero-copy h1 { font-size: clamp(32px, 8vw, 42px); }
+  .hero-copy p { font-size: 16px; }
+  .quick-nav { gap: 7px; margin: 0 10px 30px; }
+  .quick-card { min-height: 88px; gap: 7px; border-radius: 18px; font-size: 10px; }
+  .quick-card svg { width: 25px; height: 25px; }
+  .folder-section { padding-right: 10px; padding-left: 10px; }
+  .section-title { margin-right: 2px; margin-left: 2px; }
+  .section-title > div { gap: 8px; }
+  .section-title > div > svg { width: 25px; height: 25px; }
+  .section-title h2 { font-size: 19px; }
+  .section-title > span { padding: 7px 10px; font-size: 11px; }
+  .folder-grid { gap: 10px; }
+  .folder-card { border-radius: 17px; }
+  .folder-card-info { min-height: 66px; gap: 6px; padding: 8px; }
+  .folder-card-icon { width: 27px; height: 27px; }
+  .folder-card-icon svg { width: 24px; height: 24px; }
+  .folder-card-copy strong { font-size: 13px; }
+  .folder-card-copy small { font-size: 11px; }
+  .folder-arrow { width: 19px; }
+  .gallery-controls { margin-right: 12px; margin-left: 12px; }
+  .media-tabs button { min-height: 43px; gap: 6px; padding: 0 12px; font-size: 12px; }
+  .photo-grid { gap: 8px; padding-right: 10px; padding-left: 10px; }
+  .photo-card { border-radius: 14px; }
+  .bottom-tabs { gap: 8px; padding-right: 12px; padding-left: 12px; }
+}
