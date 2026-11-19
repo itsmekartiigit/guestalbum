@@ -178,16 +178,20 @@ function App() {
     setBusyMedia(photo.mediaId)
     setError('')
     setConfirmed(false)
+    setSelected((current) => alreadySelected
+      ? current.filter((id) => id !== photo.mediaId)
+      : current.includes(photo.mediaId) ? current : [...current, photo.mediaId])
     try {
       if (alreadySelected) {
         await removeGuestPhotoSelection({ token, guestSessionId: sessionId, mediaId: photo.mediaId })
-        setSelected((current) => current.filter((id) => id !== photo.mediaId))
       } else {
         await addGuestPhotoSelection({ token, guestSessionId: sessionId, mediaId: photo.mediaId })
-        setSelected((current) => current.includes(photo.mediaId) ? current : [...current, photo.mediaId])
       }
     } catch (err) {
       console.error('Photo selection failed:', err)
+      setSelected((current) => alreadySelected
+        ? current.includes(photo.mediaId) ? current : [...current, photo.mediaId]
+        : current.filter((id) => id !== photo.mediaId))
       setError('Could not update your selection. Please try again.')
     } finally {
       setBusyMedia(null)
@@ -209,7 +213,7 @@ function App() {
       pressStart.current = null
       suppressNextClick.current = true
       void togglePhoto(photo)
-    }, 450)
+    }, 280)
   }
 
   function moveLongPress(event: ReactPointerEvent<HTMLElement>) {
@@ -426,7 +430,7 @@ function App() {
         </button>
         <div className="studio-brand" aria-label={branding?.studioName || 'Studio'}>
           <span className="studio-mark">{branding?.studioLogo ? <img src={branding.studioLogo} alt="" /> : <Camera aria-hidden="true" />}</span>
-          <span className="studio-name">{branding?.studioName || 'Wedding Studio'}</span>
+          <span className="studio-name">{branding?.studioName || 'Studio'}</span>
           <ChevronDown className="studio-chevron" aria-hidden="true" />
         </div>
         <div className="header-tools">
@@ -440,7 +444,7 @@ function App() {
 
       {activeTab === 'gallery' ? <>
         <section className={`wedding-hero ${activeFolderInfo ? 'folder-hero' : ''}`}>
-          {heroImage && <img src={heroImage} alt="" className="hero-image" fetchPriority="high" />}
+          {heroImage && <img src={heroImage} alt="" className="hero-image" fetchPriority="high" style={{ objectPosition: activeFolderInfo ? 'center' : '70% center' }} />}
           <div className="hero-shade" />
           <div className="hero-copy">
             {activeFolderInfo && <span className="hero-kicker"><FolderOpen size={17} /> EVENT FOLDER</span>}
@@ -510,23 +514,21 @@ function App() {
               onContextMenu={(event) => event.preventDefault()}
             >
               <button type="button" className="photo-open" onClick={() => clickMedia(photo, index)} aria-label={isSelected ? `Remove ${photo.filename} from selection` : `View ${photo.filename}`}>
-                {imageUrl ? <img src={imageUrl} alt={photo.filename} loading="lazy" decoding="async" draggable={false} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
+                {imageUrl ? <img src={imageUrl} alt={photo.filename} loading={index < 4 ? 'eager' : 'lazy'} fetchPriority={index < 4 ? 'high' : 'auto'} decoding="async" draggable={false} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
                 {photo.mediaType === 'photo' && <AlbumPhotoWatermark
                   studioName={branding?.studioName ?? ''}
                   studioLogo={branding?.studioLogo ?? null}
-                  showOnAir={album.settings.onAirWatermarkEnabled !== false}
-                  showStudio={album.settings.watermarkEnabled === true}
+                  showOnAir={false}
+                  showStudio={Boolean(branding?.studioName || branding?.studioLogo)}
                   variant="grid"
                 />}
                 {isSelected && <span className="selection-tint" aria-hidden="true" />}
                 {photo.mediaType === 'video' && <span className="video-indicator"><Video size={16} /></span>}
                 {numberLabel && <span className="photo-number">{numberLabel}</span>}
               </button>
-              {isSelected && (
-                <span className="photo-check" aria-label="Selected">
-                  {busyMedia === photo.mediaId ? <LoaderCircle className="spinner" size={16} /> : <Check size={18} strokeWidth={3} />}
-                </span>
-              )}
+              {photo.mediaType === 'photo' && <button type="button" className={`photo-check ${isSelected ? 'selected' : ''}`} aria-label={isSelected ? `Remove ${photo.filename} from selection` : `Add ${photo.filename} to selection`} aria-pressed={isSelected} disabled={Boolean(busyMedia)} onPointerDown={(event) => { event.stopPropagation(); cancelLongPress() }} onClick={(event) => { event.stopPropagation(); void togglePhoto(photo) }}>
+                {busyMedia === photo.mediaId ? <LoaderCircle className="spinner" size={16} /> : isSelected ? <Check size={18} strokeWidth={3} /> : null}
+              </button>}
               {busyMedia === photo.mediaId && !isSelected && <span className="photo-busy"><LoaderCircle className="spinner" size={18} /></span>}
             </article>
           )
@@ -600,8 +602,8 @@ function App() {
               <AlbumPhotoWatermark
                 studioName={branding?.studioName ?? ''}
                 studioLogo={branding?.studioLogo ?? null}
-                showOnAir={album.settings.onAirWatermarkEnabled !== false}
-                showStudio={album.settings.watermarkEnabled === true}
+                showOnAir={false}
+                showStudio={Boolean(branding?.studioName || branding?.studioLogo)}
                 variant="viewer"
               />
             </div>)}
