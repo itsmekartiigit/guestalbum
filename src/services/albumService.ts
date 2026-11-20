@@ -101,6 +101,6 @@ export const createGuestSelectedArchive = httpsCallable<
 >(functions, 'createGuestSelectedArchive')
 
 export const createGuestAlbumArchive = httpsCallable<
-  GuestSessionRequest,
+  GuestSessionRequest & { folderId?: string },
   { url: string; count: number }
 >(functions, 'createGuestAlbumArchive')

@@ -337,7 +337,7 @@ function App() {
     }
   }
 
-  async function downloadAllPhotos() {
+  async function downloadAllPhotos(folderId?: string) {
     if (!sessionId || !downloadEnabled || busyMedia) return
     setBusyMedia('__download_all__')
     setError('')
@@ -348,7 +348,8 @@ function App() {
         setError('Downloads are disabled for this album.')
         return
       }
-      const result = await createGuestAlbumArchive({ token, guestSessionId: sessionId })
+      const selectedFolderId = folderId ?? (activeFolder !== 'all' ? activeFolder : undefined)
+      const result = await createGuestAlbumArchive({ token, guestSessionId: sessionId, ...(selectedFolderId ? { folderId: selectedFolderId } : {}) })
       window.location.assign(result.data.url)
     } catch (err) {
       console.error('Album photo download failed:', err)
@@ -370,7 +371,7 @@ function App() {
         return
       }
       const link = document.createElement('a')
-      link.href = currentPhoto.previewUrl
+      link.href = `${currentPhoto.previewUrl}${currentPhoto.previewUrl.includes('?') ? '&' : '?'}download=1`
       link.download = currentPhoto.filename
       link.rel = 'noopener'
       document.body.appendChild(link)
@@ -467,10 +468,10 @@ function App() {
               {folders.map((folder) => {
                 const cover = folderCover(folder.folderId)
                 const count = folderPhotoCount(folder.folderId)
-                return <button className="folder-card" type="button" key={folder.folderId} onClick={() => openFolder(folder.folderId)}>
+                return <div className="folder-card-wrap" key={folder.folderId}><button className="folder-card" type="button" onClick={() => openFolder(folder.folderId)}>
                   <span className="folder-card-image">{cover ? <img src={cover.thumbnailUrl || cover.previewUrl || ''} alt="" loading="lazy" decoding="async" /> : <span className="folder-placeholder"><Images /></span>}</span>
                   <span className="folder-card-info"><span className="folder-card-icon"><ImageIcon /></span><span className="folder-card-copy"><strong>{folder.folderName}</strong><small>{count} {count === 1 ? 'Photo' : 'Photos'}</small></span><ChevronRight className="folder-arrow" /></span>
-                </button>
+                </button>{downloadEnabled && <button className="folder-download" type="button" onClick={() => void downloadAllPhotos(folder.folderId)} disabled={Boolean(busyMedia)} aria-label={`Download all photos in ${folder.folderName}`}>{busyMedia === '__download_all__' ? <LoaderCircle className="spinner" size={16} /> : <><Download size={16} /> Download All</>}</button>}</div>
               })}
               {folders.length === 0 && <div className="folders-empty"><FolderOpen /><span>No event folders yet</span></div>}
             </div>
@@ -519,7 +520,7 @@ function App() {
                   studioName={branding?.studioName ?? ''}
                   studioLogo={branding?.studioLogo ?? null}
                   showOnAir={false}
-                  showStudio={Boolean(branding?.studioName || branding?.studioLogo)}
+                  showStudio={album.settings.watermarkEnabled === true && Boolean(branding?.studioName || branding?.studioLogo)}
                   variant="grid"
                 />}
                 {isSelected && <span className="selection-tint" aria-hidden="true" />}
@@ -603,7 +604,7 @@ function App() {
                 studioName={branding?.studioName ?? ''}
                 studioLogo={branding?.studioLogo ?? null}
                 showOnAir={false}
-                showStudio={Boolean(branding?.studioName || branding?.studioLogo)}
+                showStudio={album.settings.watermarkEnabled === true && Boolean(branding?.studioName || branding?.studioLogo)}
                 variant="viewer"
               />
             </div>)}
