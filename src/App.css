@@ -165,6 +165,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-off
 .viewer-next { right: 12px; }
 .viewer-image-frame { position: relative; display: grid; max-width: calc(100% - 92px); max-height: 78vh; overflow: hidden; border-radius: 14px; }
 .viewer-image { display: block; max-width: 100%; max-height: 78vh; border-radius: 14px; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.viewer-image-fallback { display: grid; min-width: min(70vw, 360px); min-height: 220px; place-content: center; justify-items: center; gap: 10px; color: #aaa; background: #171719; font-size: 14px; }
 .watermark-viewer { font-size: clamp(15px, 2.3vw, 30px); }
 .viewer-bottom { position: absolute; z-index: 3; right: 0; bottom: 0; left: 0; display: flex; min-height: 78px; align-items: center; justify-content: space-between; padding: 15px 20px max(15px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #000e); color: #ddd; font-size: 12px; }
 .viewer-bottom button { display: flex; min-height: 43px; align-items: center; gap: 8px; padding: 0 15px; border: 0; border-radius: 12px; background: var(--air-red); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }

@@ -58,6 +58,9 @@ function App() {
   const [activeTab, setActiveTab] = useState<'gallery' | 'selection'>('gallery')
   const [confirmed, setConfirmed] = useState(false)
   const [downloadEnabled, setDownloadEnabled] = useState(false)
+  const [failedThumbnailIds, setFailedThumbnailIds] = useState<Set<string>>(() => new Set())
+  const [failedImageIds, setFailedImageIds] = useState<Set<string>>(() => new Set())
+  const [loadedImageIds, setLoadedImageIds] = useState<Set<string>>(() => new Set())
   const touchStartX = useRef<number | null>(null)
   const pressTimer = useRef<number | null>(null)
   const pressStart = useRef<{ x: number; y: number } | null>(null)
@@ -130,6 +133,9 @@ function App() {
           cursor = nextPage.data.nextCursor
         }
         if (cancelled) return
+        setFailedImageIds(new Set())
+        setFailedThumbnailIds(new Set())
+        setLoadedImageIds(new Set())
         setMedia(allMedia)
 
         try {
@@ -418,7 +424,7 @@ function App() {
   const folderPhotoCount = (folderId: string) => media.filter((item) => item.folderId === folderId && item.mediaType === 'photo').length
   const folderVideoCount = (folderId: string) => media.filter((item) => item.folderId === folderId && item.mediaType === 'video').length
   const folderCover = (folderId: string) => media.find((item) => item.folderId === folderId && item.mediaType === 'photo' && (item.thumbnailUrl || item.previewUrl))
-  const heroImage = activeFolderInfo ? folderCover(activeFolderInfo.folderId)?.thumbnailUrl || folderCover(activeFolderInfo.folderId)?.previewUrl : album.coverImageUrl
+  const heroImage = activeFolderInfo ? folderCover(activeFolderInfo.folderId)?.previewUrl || folderCover(activeFolderInfo.folderId)?.thumbnailUrl : album.coverImageUrl
   const homePhotoCount = media.filter((item) => item.mediaType === 'photo').length
   const homeVideoCount = media.filter((item) => item.mediaType === 'video').length
 
@@ -469,7 +475,7 @@ function App() {
                 const cover = folderCover(folder.folderId)
                 const count = folderPhotoCount(folder.folderId)
                 return <div className="folder-card-wrap" key={folder.folderId}><button className="folder-card" type="button" onClick={() => openFolder(folder.folderId)}>
-                  <span className="folder-card-image">{cover ? <img src={cover.thumbnailUrl || cover.previewUrl || ''} alt="" loading="lazy" decoding="async" /> : <span className="folder-placeholder"><Images /></span>}</span>
+                  <span className="folder-card-image">{cover && !failedImageIds.has(cover.mediaId) ? <img src={cover.thumbnailUrl && !failedThumbnailIds.has(cover.mediaId) ? cover.thumbnailUrl : cover.previewUrl || ''} alt="" loading="lazy" decoding="async" onError={() => { if (cover.thumbnailUrl && cover.previewUrl && !failedThumbnailIds.has(cover.mediaId)) setFailedThumbnailIds((current) => new Set(current).add(cover.mediaId)); else setFailedImageIds((current) => new Set(current).add(cover.mediaId)) }} /> : <span className="folder-placeholder"><Images /></span>}</span>
                   <span className="folder-card-info"><span className="folder-card-icon"><ImageIcon /></span><span className="folder-card-copy"><strong>{folder.folderName}</strong><small>{count} {count === 1 ? 'Photo' : 'Photos'}</small></span><ChevronRight className="folder-arrow" /></span>
                 </button>{downloadEnabled && <button className="folder-download" type="button" onClick={() => void downloadAllPhotos(folder.folderId)} disabled={Boolean(busyMedia)} aria-label={`Download all photos in ${folder.folderName}`}>{busyMedia === '__download_all__' ? <LoaderCircle className="spinner" size={16} /> : <><Download size={16} /> Download All</>}</button>}</div>
               })}
@@ -501,7 +507,7 @@ function App() {
       {(activeTab === 'selection' || screen === 'gallery') && <section className="photo-grid" aria-label={activeTab === 'selection' ? 'Selected photos' : 'Wedding album photos'}>
         {visibleMedia.map((photo, index) => {
           const isSelected = selected.includes(photo.mediaId)
-          const imageUrl = photo.thumbnailUrl || photo.previewUrl
+          const imageUrl = photo.thumbnailUrl && !failedThumbnailIds.has(photo.mediaId) ? photo.thumbnailUrl : photo.previewUrl
           const numberLabel = photo.serialNumber !== null ? `#${String(photo.serialNumber).padStart(3, '0')}` : null
           return (
             <article
@@ -515,8 +521,8 @@ function App() {
               onContextMenu={(event) => event.preventDefault()}
             >
               <button type="button" className="photo-open" onClick={() => clickMedia(photo, index)} aria-label={isSelected ? `Remove ${photo.filename} from selection` : `View ${photo.filename}`}>
-                {imageUrl ? <img src={imageUrl} alt={photo.filename} loading={index < 4 ? 'eager' : 'lazy'} fetchPriority={index < 4 ? 'high' : 'auto'} decoding="async" draggable={false} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
-                {photo.mediaType === 'photo' && <AlbumPhotoWatermark
+                {imageUrl && !failedImageIds.has(photo.mediaId) ? <img src={imageUrl} alt={photo.filename} loading={index < 4 ? 'eager' : 'lazy'} fetchPriority={index < 4 ? 'high' : 'auto'} decoding="async" draggable={false} onLoad={() => setLoadedImageIds((current) => new Set(current).add(photo.mediaId))} onError={() => { setLoadedImageIds((current) => { const next = new Set(current); next.delete(photo.mediaId); return next }); if (photo.thumbnailUrl && imageUrl === photo.thumbnailUrl && photo.previewUrl) setFailedThumbnailIds((current) => new Set(current).add(photo.mediaId)); else setFailedImageIds((current) => new Set(current).add(photo.mediaId)) }} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
+                {loadedImageIds.has(photo.mediaId) && photo.mediaType === 'photo' && <AlbumPhotoWatermark
                   studioName={branding?.studioName ?? ''}
                   studioLogo={branding?.studioLogo ?? null}
                   showOnAir={false}
@@ -596,18 +602,19 @@ function App() {
             </div>
           </div>
           <button className="viewer-arrow viewer-prev" type="button" onClick={() => changeViewer(-1)} aria-label="Previous photo"><ChevronLeft /></button>
-          {currentPhoto.previewUrl && (currentPhoto.mediaType === 'video'
+          {currentPhoto.previewUrl && !failedImageIds.has(currentPhoto.mediaId) && (currentPhoto.mediaType === 'video'
             ? <video className="viewer-image" src={currentPhoto.previewUrl} controls controlsList="nodownload" disablePictureInPicture autoPlay onContextMenu={(event) => event.preventDefault()} />
             : <div className="viewer-image-frame">
-              <img className="viewer-image" src={currentPhoto.previewUrl} alt={currentPhoto.filename} draggable={false} />
-              <AlbumPhotoWatermark
+              <img className="viewer-image" src={currentPhoto.previewUrl} alt={currentPhoto.filename} draggable={false} onLoad={() => setLoadedImageIds((current) => new Set(current).add(currentPhoto.mediaId))} onError={() => setFailedImageIds((current) => new Set(current).add(currentPhoto.mediaId))} />
+              {loadedImageIds.has(currentPhoto.mediaId) && <AlbumPhotoWatermark
                 studioName={branding?.studioName ?? ''}
                 studioLogo={branding?.studioLogo ?? null}
                 showOnAir={false}
                 showStudio={album.settings.watermarkEnabled === true && Boolean(branding?.studioName || branding?.studioLogo)}
                 variant="viewer"
-              />
+              />}
             </div>)}
+          {failedImageIds.has(currentPhoto.mediaId) && <div className="viewer-image viewer-image-fallback" role="img" aria-label={`${currentPhoto.filename} preview unavailable`}><ImageIcon size={32} /><span>Preview unavailable</span></div>}
           <button className="viewer-arrow viewer-next" type="button" onClick={() => changeViewer(1)} aria-label="Next photo"><ChevronRight /></button>
           <div className="viewer-bottom">
             <span>{viewerIndex! + 1} / {visibleMedia.length}</span>
