@@ -32,7 +32,6 @@ import {
   type GuestAlbumMedia,
   type GuestAlbumResponse,
 } from './services/albumService'
-import AlbumPhotoWatermark from './AlbumPhotoWatermark'
 import './App.css'
 
 function getAlbumToken() {
@@ -60,7 +59,6 @@ function App() {
   const [downloadEnabled, setDownloadEnabled] = useState(false)
   const [failedThumbnailIds, setFailedThumbnailIds] = useState<Set<string>>(() => new Set())
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(() => new Set())
-  const [loadedImageIds, setLoadedImageIds] = useState<Set<string>>(() => new Set())
   const touchStartX = useRef<number | null>(null)
   const pressTimer = useRef<number | null>(null)
   const pressStart = useRef<{ x: number; y: number } | null>(null)
@@ -135,7 +133,6 @@ function App() {
         if (cancelled) return
         setFailedImageIds(new Set())
         setFailedThumbnailIds(new Set())
-        setLoadedImageIds(new Set())
         setMedia(allMedia)
 
         try {
@@ -521,14 +518,7 @@ function App() {
               onContextMenu={(event) => event.preventDefault()}
             >
               <button type="button" className="photo-open" onClick={() => clickMedia(photo, index)} aria-label={isSelected ? `Remove ${photo.filename} from selection` : `View ${photo.filename}`}>
-                {imageUrl && !failedImageIds.has(photo.mediaId) ? <img src={imageUrl} alt={photo.filename} loading={index < 4 ? 'eager' : 'lazy'} fetchPriority={index < 4 ? 'high' : 'auto'} decoding="async" draggable={false} onLoad={() => setLoadedImageIds((current) => new Set(current).add(photo.mediaId))} onError={() => { setLoadedImageIds((current) => { const next = new Set(current); next.delete(photo.mediaId); return next }); if (photo.thumbnailUrl && imageUrl === photo.thumbnailUrl && photo.previewUrl) setFailedThumbnailIds((current) => new Set(current).add(photo.mediaId)); else setFailedImageIds((current) => new Set(current).add(photo.mediaId)) }} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
-                {loadedImageIds.has(photo.mediaId) && photo.mediaType === 'photo' && <AlbumPhotoWatermark
-                  studioName={branding?.studioName ?? ''}
-                  studioLogo={branding?.studioLogo ?? null}
-                  showOnAir={false}
-                  showStudio={album.settings.watermarkEnabled === true && Boolean(branding?.studioName || branding?.studioLogo)}
-                  variant="grid"
-                />}
+                {imageUrl && !failedImageIds.has(photo.mediaId) ? <img src={imageUrl} alt={photo.filename} loading={index < 4 ? 'eager' : 'lazy'} fetchPriority={index < 4 ? 'high' : 'auto'} decoding="async" draggable={false} onError={() => { if (photo.thumbnailUrl && imageUrl === photo.thumbnailUrl && photo.previewUrl) setFailedThumbnailIds((current) => new Set(current).add(photo.mediaId)); else setFailedImageIds((current) => new Set(current).add(photo.mediaId)) }} onDragStart={(event) => event.preventDefault()} /> : <div className="photo-placeholder"><ImageIcon size={25} /></div>}
                 {isSelected && <span className="selection-tint" aria-hidden="true" />}
                 {photo.mediaType === 'video' && <span className="video-indicator"><Video size={16} /></span>}
                 {numberLabel && <span className="photo-number">{numberLabel}</span>}
@@ -605,14 +595,7 @@ function App() {
           {currentPhoto.previewUrl && !failedImageIds.has(currentPhoto.mediaId) && (currentPhoto.mediaType === 'video'
             ? <video className="viewer-image" src={currentPhoto.previewUrl} controls controlsList="nodownload" disablePictureInPicture autoPlay onContextMenu={(event) => event.preventDefault()} />
             : <div className="viewer-image-frame">
-              <img className="viewer-image" src={currentPhoto.previewUrl} alt={currentPhoto.filename} draggable={false} onLoad={() => setLoadedImageIds((current) => new Set(current).add(currentPhoto.mediaId))} onError={() => setFailedImageIds((current) => new Set(current).add(currentPhoto.mediaId))} />
-              {loadedImageIds.has(currentPhoto.mediaId) && <AlbumPhotoWatermark
-                studioName={branding?.studioName ?? ''}
-                studioLogo={branding?.studioLogo ?? null}
-                showOnAir={false}
-                showStudio={album.settings.watermarkEnabled === true && Boolean(branding?.studioName || branding?.studioLogo)}
-                variant="viewer"
-              />}
+              <img className="viewer-image" src={currentPhoto.previewUrl} alt={currentPhoto.filename} draggable={false} onError={() => setFailedImageIds((current) => new Set(current).add(currentPhoto.mediaId))} />
             </div>)}
           {failedImageIds.has(currentPhoto.mediaId) && <div className="viewer-image viewer-image-fallback" role="img" aria-label={`${currentPhoto.filename} preview unavailable`}><ImageIcon size={32} /><span>Preview unavailable</span></div>}
           <button className="viewer-arrow viewer-next" type="button" onClick={() => changeViewer(1)} aria-label="Next photo"><ChevronRight /></button>
