@@ -121,7 +121,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-off
 .watermark-studio { position: absolute; right: 5%; bottom: 4.5%; left: 5%; display: flex; align-items: center; justify-content: center; text-align: center; }
 .watermark-studio::before, .watermark-studio::after { width: 16%; border-top: 1px solid currentColor; content: ''; }
 .watermark-studio { gap: 1em; }
-.watermark-studio-name { max-width: 60%; overflow: hidden; font-family: 'Dancing Script', 'Playfair Display', cursive; font-size: 1.55em; font-style: italic; font-weight: 600; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.watermark-camera { width: 1.15em; height: 1.15em; flex: 0 0 auto; color: #fff; filter: drop-shadow(0 1px 1px #10131a); stroke-width: 2; }
+.watermark-studio-name { max-width: 52%; overflow: hidden; color: #fff; font-family: 'Dancing Script', 'Playfair Display', cursive; font-size: 1.55em; font-style: italic; font-weight: 800; line-height: 1; text-shadow: 0 1px 1px #10131a; text-overflow: ellipsis; white-space: nowrap; }
 .watermark-grid { font-size: clamp(9px, 2.1vw, 14px); }
 .compact-layout { column-gap: 6px; }
 .compact-layout .photo-card { margin-bottom: 6px; border-radius: 10px; }
