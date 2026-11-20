@@ -87,8 +87,13 @@ export const removeGuestPhotoSelection = httpsCallable<
 
 export const getGuestSelections = httpsCallable<
   GuestSessionRequest,
-  { mediaIds: string[] }
+  { roundId: string; mediaIds: string[]; confirmed: boolean }
 >(functions, 'getGuestSelections')
+
+export const confirmGuestSelection = httpsCallable<
+  GuestSessionRequest,
+  { success: boolean; roundId: string }
+>(functions, 'confirmGuestSelection')
 
 export const getGuestDownloadPermission = httpsCallable<
   GuestSessionRequest,

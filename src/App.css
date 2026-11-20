@@ -150,6 +150,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-off
 .status-page h2 { margin: 18px 0 7px; font-family: 'Playfair Display', Georgia, serif; font-weight: 500; }
 .status-page p { max-width: 340px; color: #9999a5; font-size: 13px; line-height: 1.7; }
 .status-icon { display: grid; width: 55px; height: 55px; place-items: center; border-radius: 16px; background: #382027; color: var(--air-red); }
+.selection-complete-icon { width: 68px; height: 68px; border-radius: 22px; background: #173116; color: #8ee47d; }
+.selection-complete-page h1 { margin: 18px 0 0; color: #fff; font-size: clamp(25px, 6vw, 34px); text-align: center; }
+.selection-complete-page p { max-width: 320px; margin: 10px 0 0; color: #aaa; line-height: 1.6; text-align: center; }
 .status-brand { display: flex; align-items: center; gap: 7px; margin-top: 25px; color: var(--air-red); font-weight: 800; }
 .spinner { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }

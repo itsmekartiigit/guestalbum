@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Camera,
   Check,
+  CircleCheck,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react'
 import {
   addGuestPhotoSelection,
+  confirmGuestSelection,
   createAlbumGuestSession,
   createGuestAlbumArchive,
   createGuestSelectedArchive,
@@ -137,7 +139,10 @@ function App() {
 
         try {
           const existing = await getGuestSelections({ token, guestSessionId })
-          if (!cancelled) setSelected(existing.data.mediaIds)
+          if (!cancelled) {
+            setSelected(existing.data.mediaIds)
+            setConfirmed(existing.data.confirmed)
+          }
         } catch {
           if (!cancelled) setSelected([])
         }
@@ -309,6 +314,7 @@ function App() {
     setError('')
     try {
       const latest = await getGuestSelections({ token, guestSessionId: sessionId })
+      await confirmGuestSelection({ token, guestSessionId: sessionId })
       setSelected(latest.data.mediaIds)
       setConfirmed(true)
     } catch (err) {
@@ -415,6 +421,15 @@ function App() {
   }
 
   if (!album) return null
+
+  if (confirmed) {
+    return <main className="app status-page selection-complete-page">
+      <div className="status-icon selection-complete-icon"><CircleCheck size={30} /></div>
+      <h1>Album selection done</h1>
+      <p>Your photo selection has been saved and confirmed.</p>
+      <span className="status-brand"><Radio size={16} /> ON AIR</span>
+    </main>
+  }
 
   const remaining = selectionLimit > 0 ? Math.max(0, selectionLimit - selectedPhotos.length) : null
   const activeFolderInfo = folders.find((folder) => folder.folderId === activeFolder)
