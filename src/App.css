@@ -113,8 +113,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid #fff; outline-off
 .photo-busy { position: absolute; inset: 0; display: grid; place-items: center; background: #0005; color: #fff; pointer-events: none; }
 .photo-placeholder { display: grid; width: 100%; min-height: 150px; place-items: center; color: #777; }
 .album-watermarks { position: absolute; z-index: 2; inset: 0; overflow: hidden; color: #fff; pointer-events: none; }
+.watermark-on-air { position: absolute; top: 5.5%; left: 5%; display: flex; align-items: center; gap: .35em; padding: .35em .45em; border: 1px solid #ffffff70; border-radius: 3px; background: #080a10a6; box-shadow: 0 1px 8px #0007; opacity: .9; text-align: left; text-shadow: 0 1px 4px #000a; }
+.watermark-on-air-icon { width: 1.5em; height: 1.5em; flex: 0 0 auto; color: #f3243b; stroke-width: 2.5; }
+.watermark-on-air-copy { display: flex; flex-direction: column; line-height: 1; }
+.watermark-on-air-copy b { font-size: .72em; font-weight: 800; letter-spacing: .12em; white-space: nowrap; }
+.watermark-on-air-copy small { margin-top: .32em; font-size: .35em; font-weight: 700; letter-spacing: .2em; white-space: nowrap; }
 .watermark-studio { position: absolute; right: 5%; bottom: 4.5%; left: 5%; display: flex; align-items: center; justify-content: center; text-align: center; }
-.watermark-studio-name { max-width: 100%; overflow: hidden; font-family: 'Dancing Script', 'Playfair Display', cursive; font-size: 1.55em; font-weight: 600; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
+.watermark-studio::before, .watermark-studio::after { width: 16%; border-top: 1px solid currentColor; content: ''; }
+.watermark-studio { gap: 1em; }
+.watermark-studio-name { max-width: 60%; overflow: hidden; font-family: 'Dancing Script', 'Playfair Display', cursive; font-size: 1.55em; font-style: italic; font-weight: 600; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
 .watermark-grid { font-size: clamp(9px, 2.1vw, 14px); }
 .compact-layout { column-gap: 6px; }
 .compact-layout .photo-card { margin-bottom: 6px; border-radius: 10px; }

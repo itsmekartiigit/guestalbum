@@ -1,3 +1,5 @@
+import { Radio } from 'lucide-react'
+
 type AlbumPhotoWatermarkProps = {
   studioName: string
   studioLogo: string | null
@@ -9,16 +11,17 @@ type AlbumPhotoWatermarkProps = {
 
 export default function AlbumPhotoWatermark({
   studioName,
+  showOnAir,
   showStudio,
   variant,
 }: AlbumPhotoWatermarkProps) {
-  if (!showStudio || !studioName) return null
+  if (!showOnAir && (!showStudio || !studioName)) return null
 
   return (
     <div className={`album-watermarks watermark-${variant}`} aria-hidden="true">
-      <div className="watermark-studio">
-        <span className="watermark-studio-name">{studioName}</span>
-      </div>
+      {showOnAir && <div className="watermark-on-air"><Radio className="watermark-on-air-icon" /><span className="watermark-on-air-copy"><b>ON AIR</b><small>WEDDING LIVE</small></span></div>}
+      {showStudio && studioName && <div className="watermark-studio"><span className="watermark-studio-name">{studioName}</span></div>}
     </div>
   )
 }
+
